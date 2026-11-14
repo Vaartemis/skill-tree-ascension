@@ -4,6 +4,8 @@
 
 Requires [Passive Skill Tree](https://www.curseforge.com/minecraft/mc-mods/passive-skill-tree) 0.7.6 or newer (Forge 1.20.1). Iron's Spells 'n Spellbooks, Apotheosis and Origins are optional.
 
+**Source code, full documentation and an example datapack:** [GitHub](https://github.com/Vaartemis/skill-tree-ascension) ([every bonus explained](https://github.com/Vaartemis/skill-tree-ascension/blob/main/docs/bonuses.md), [datapack and tree access guide](https://github.com/Vaartemis/skill-tree-ascension/blob/main/docs/datapacks.md)).
+
 ---
 
 ## A new skill tree screen
@@ -74,7 +76,7 @@ Every number in every bonus can be changed in the skill file, and most bonuses a
 
 ## For pack makers
 
-Everything lives in `data/<namespace>/skillascension/` (point types, node rules, rank tiers) and reloads with `/reload`. Full documentation, the exact behavior of every bonus and an example datapack are on the source page (GitHub). The mod ships no skill trees of its own: build yours with PST's editor.
+Everything lives in `data/<namespace>/skillascension/` (point types, node rules, rank tiers) and reloads with `/reload`. Full documentation, the exact behavior of every bonus and an example datapack are on [GitHub](https://github.com/Vaartemis/skill-tree-ascension). The mod ships no skill trees of its own: build yours with PST's editor.
 
 ---
 
