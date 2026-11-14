@@ -1,0 +1,58 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+}
+
+group = 'dev.skillascension'
+version = mod_version
+base { archivesName = 'skillascension' }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            mods { skillascension { source sourceSets.main } }
+        }
+        server {
+            workingDirectory project.file('run-server')
+            property 'forge.logging.console.level', 'info'
+            mods { skillascension { source sourceSets.main } }
+        }
+    }
+}
+
+repositories {
+    // Put Passive Skill Tree (and, optionally, Iron's Spells, Apotheosis and Placebo) jars in libs/
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    fileTree(dir: 'libs', include: '*.jar').each { File jar ->
+        def name = jar.name.substring(0, jar.name.length() - 4)
+        implementation fg.deobf("libs:${name}")
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+            'Specification-Title'     : 'skillascension',
+            'Specification-Version'   : '1',
+            'Implementation-Title'    : 'Skill Tree Ascension',
+            'Implementation-Version'  : project.version,
+            'MixinConfigs'            : 'skillascension.mixins.json'
+        ])
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

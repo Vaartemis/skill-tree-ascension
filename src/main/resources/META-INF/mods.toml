@@ -1,0 +1,35 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="GPL-3.0-or-later"
+
+[[mods]]
+modId="skillascension"
+version="1.1.0"
+displayName="Skill Tree Ascension"
+authors="Vaartemis"
+logoFile="skillascension_logo.png"
+credits="Built on Passive Skill Tree by Daripher."
+description='''
+An addon for Passive Skill Tree: a new skill tree screen, extra point types, repeatable skills with levels and milestones, and many new skill bonuses. Everything is set up with datapacks and configs.
+'''
+
+[[dependencies.skillascension]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.skillascension]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.20.2)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.skillascension]]
+    modId="skilltree"
+    mandatory=true
+    versionRange="[0.7.6,)"
+    ordering="AFTER"
+    side="BOTH"

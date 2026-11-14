@@ -1,0 +1,9 @@
+{
+  "tiers": [
+    {"level": 1, "name": "skillascension.rank_tier.bronze", "color": "#D08A4E"},
+    {"level": 10, "name": "skillascension.rank_tier.silver", "color": "#D8DCE3"},
+    {"level": 20, "name": "skillascension.rank_tier.gold", "color": "#FFD34A"},
+    {"level": 30, "name": "skillascension.rank_tier.platinum", "color": "#9FF0D0"},
+    {"level": 50, "name": "skillascension.rank_tier.diamond", "color": "#5CE1E6"}
+  ]
+}

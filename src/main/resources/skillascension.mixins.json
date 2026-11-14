@@ -1,0 +1,46 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.skillascension.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ApothEnchantAmplifyMixin",
+    "ApothEnchantDiscountMixin",
+    "EnchantTableDiscountMixin",
+    "EnchantTriggerAmplifyMixin",
+    "LearnSkillMessageAccessor",
+    "NightVigilSleepMixin",
+    "PstChatComponentMixin",
+    "PstEffectStackingMixin",
+    "PstGainSkillPointMainThreadMixin",
+    "PstInflictDamageMixin",
+    "PstLearnSkillMainThreadMixin",
+    "PstRepeatableBonusesMixin",
+    "PstResetTreeMixin",
+    "PstWisdomScrollPointsMixin"
+  ],
+  "client": [
+    "PstBuffSummaryMixin",
+    "PstHideKeystoneLimitMixin",
+    "PstIconScaleMixin",
+    "PstPathTooltipMixin",
+    "PstPointCostMixin",
+    "PstProgressBarRanksMixin",
+    "PstRepeatableClickMixin",
+    "PstRepeatableTooltipMixin",
+    "PstScreenCapabilityGuardMixin",
+    "PstScreenRebuildMixin",
+    "PstSkillPointCostClientMixin",
+    "PstSoloClassLimitMixin",
+    "PstSyncCoalesceMixin",
+    "PstTreeOrderMixin",
+    "PstUiFieldStyleMixin",
+    "PstUiHubMixin",
+    "PstUiLayoutMixin",
+    "PstUiScreenMixin",
+    "PstUiStyleMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

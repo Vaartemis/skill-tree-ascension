@@ -1,0 +1,22 @@
+{
+  "rules": [
+    {
+      "tag": "Talent",
+      "repeatable": true,
+      "max_level": 0,
+      "level_cost": 1,
+      "free_level_every": 10,
+      "bonus_per_level": 1.0
+    },
+    {
+      "skills": ["example:talent_vitality"],
+      "max_level": 20,
+      "level_cost": 2,
+      "bonus_per_level": 0.5,
+      "milestones": [
+        { "level": 10, "message": "Vitality 10: you feel unstoppable.", "commands": ["effect give @s minecraft:regeneration 30 1"] },
+        { "level": 20, "command": "give @s minecraft:golden_apple 1" }
+      ]
+    }
+  ]
+}

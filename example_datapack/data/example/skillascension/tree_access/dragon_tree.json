@@ -1,0 +1,8 @@
+{
+  "trees": ["example:dragon"],
+  "mode": "any",
+  "requires": [
+    { "type": "origin", "origin": "origins:elytrian" },
+    { "type": "tag", "tag": "dragonborn" }
+  ]
+}

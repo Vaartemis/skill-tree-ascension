@@ -1,0 +1,13 @@
+{
+  "name": "Talent Points",
+  "color": "#B48CFF",
+  "skill_tag": "Talent",
+  "cost": 1,
+  "show_in_header": true,
+  "refund_on_reset": true,
+  "sources": [
+    { "type": "xp_level", "every": 10, "amount": 1 },
+    { "type": "advancement", "advancement": "minecraft:story/enter_the_nether", "amount": 2 },
+    { "type": "skill_points_earned", "every": 5, "amount": 1, "max": 10 }
+  ]
+}

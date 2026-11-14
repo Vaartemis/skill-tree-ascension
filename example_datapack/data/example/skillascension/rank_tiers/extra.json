@@ -1,0 +1,6 @@
+{
+  "replace": false,
+  "tiers": [
+    { "level": 100, "name": "Mythic", "color": "#FF5555" }
+  ]
+}
