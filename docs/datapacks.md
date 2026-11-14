@@ -96,11 +96,19 @@ Conditions (each can also take `"inverted": true` to mean "does NOT have"):
 | `type` | Fields | Passes when the player... |
 |---|---|---|
 | `origin` | `origin`, optional `layer` | has that origin (Origins for Forge; in that layer, or any layer). |
-| `power` | `power` | has that Apoli power, from an origin or any other source. |
+| `power` | `power`, optional `active` [false] | has that Apoli power, from an origin or any other source. With `"active": true`, only while the power is active (for example an `origins:toggle` power switched on with its key), so players can show and hide the tree themselves. |
 | `advancement` | `advancement` | has completed the advancement. |
 | `skill` | `skill` | has learned that skill (any tree), for trees that unlock from another tree. |
 | `tag` | `tag` | has that scoreboard tag (`/tag @s add dragonborn`), so any mod, quest or command block can unlock a tree. |
 | `permission` | `level` [2] | has that permission level (for admin or test trees). |
+
+Example: a tree only players of one origin can open, by switching on a toggle power of that origin:
+
+```json
+{ "trees": ["mypack:dragon"], "requires": [{ "type": "power", "power": "mypack:dragon_sight", "active": true }] }
+```
+
+Everyone else never sees the tree (players without the power can't turn it on).
 
 Origins and Apoli are optional: without them, `origin` and `power` conditions are simply false.
 

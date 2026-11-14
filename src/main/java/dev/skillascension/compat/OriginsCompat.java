@@ -19,6 +19,7 @@ public final class OriginsCompat {
     private static Method originsMap;
     private static Method powerGet;
     private static Method hasPower;
+    private static Method getPower;
     private static boolean triedOrigins;
     private static boolean triedPowers;
 
@@ -49,6 +50,10 @@ public final class OriginsCompat {
                     Class<?> c = Class.forName("io.github.edwinmindcraft.apoli.api.component.IPowerContainer");
                     powerGet = c.getMethod("get", Entity.class);
                     hasPower = c.getMethod("hasPower", ResourceLocation.class);
+                    try {
+                        getPower = c.getMethod("getPower", ResourceLocation.class);
+                    } catch (NoSuchMethodException ignored) {
+                    }
                 } catch (Throwable t) {
                     SkillAscension.LOG.warn("Apoli is installed but its API was not found, power conditions will be false: {}", t.toString());
                 }
@@ -81,11 +86,18 @@ public final class OriginsCompat {
     }
 
     /** True when the entity has this Apoli power (from an origin or any other source). */
-    public static boolean hasPower(Entity entity, ResourceLocation power) {
+    public static boolean hasPower(Entity entity, ResourceLocation power, boolean mustBeActive) {
         if (power == null || !powersReady()) return false;
         try {
             Object container = resolve(powerGet, entity);
-            return container != null && Boolean.TRUE.equals(hasPower.invoke(container, power));
+            if (container == null || !Boolean.TRUE.equals(hasPower.invoke(container, power))) return false;
+            if (!mustBeActive || getPower == null) return true;
+            // toggle and other active powers: only while switched on / active
+            Object holder = getPower.invoke(container, power);
+            if (!(holder instanceof net.minecraft.core.Holder<?> h)) return false;
+            Object configured = h.value();
+            Method isActive = configured.getClass().getMethod("isActive", Entity.class);
+            return Boolean.TRUE.equals(isActive.invoke(configured, entity));
         } catch (Throwable t) {
             SkillAscension.LOG.debug("Power check failed: {}", t.toString());
             return false;

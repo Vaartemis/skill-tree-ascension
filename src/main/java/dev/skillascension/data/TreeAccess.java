@@ -97,6 +97,7 @@ public final class TreeAccess {
         final String tag;
         final int level;
         final boolean inverted;
+        final boolean active;
 
         Condition(JsonObject json) {
             this.type = GsonHelper.getAsString(json, "type");
@@ -112,6 +113,7 @@ public final class TreeAccess {
             this.tag = GsonHelper.getAsString(json, "tag", null);
             this.level = GsonHelper.getAsInt(json, "level", 2);
             this.inverted = GsonHelper.getAsBoolean(json, "inverted", false);
+            this.active = GsonHelper.getAsBoolean(json, "active", false);
             if (!List.of("origin", "power", "advancement", "skill", "tag", "permission").contains(type)) {
                 throw new IllegalArgumentException("unknown condition type " + type);
             }
@@ -121,7 +123,7 @@ public final class TreeAccess {
             boolean result;
             switch (type) {
                 case "origin" -> result = OriginsCompat.hasOrigin(player, id, layer);
-                case "power" -> result = OriginsCompat.hasPower(player, id);
+                case "power" -> result = OriginsCompat.hasPower(player, id, active);
                 case "advancement" -> {
                     Advancement adv = player.server.getAdvancements().getAdvancement(id);
                     result = adv != null && player.getAdvancements().getOrStartProgress(adv).isDone();
