@@ -200,19 +200,56 @@ public final class RepeatableSkills {
     /** Attribute bonuses are applied as permanent modifiers, one per skill and bonus index. */
     public static void applyAttributes(ServerPlayer player) {
         Map<ResourceLocation, Integer> ranks = ranks(player);
+        applyMilestoneAttributes(player, ranks);
         for (PassiveSkill skill : SkillsReloader.getSkills().values()) {
             if (!isRepeatable(skill)) continue;
             double power = power(skill, ranks.getOrDefault(skill.getId(), 0));
             List<SkillBonus<?>> bonuses = skill.getBonuses();
             for (int i = 0; i < bonuses.size(); i++) {
-                if (!(bonuses.get(i) instanceof AttributeBonus bonus) || bonus.isDynamic() || bonus.getAttribute() == null) continue;
+                if (!(bonuses.get(i) instanceof AttributeBonus bonus) || bonus.getAttribute() == null) continue;
                 AttributeInstance instance = player.getAttribute(bonus.getAttribute());
                 if (instance == null) continue;
                 UUID id = UUID.nameUUIDFromBytes(("skillascension:rank/" + skill.getId() + "/" + i).getBytes(StandardCharsets.UTF_8));
+                if (bonus.isDynamic()) {
+                    // ticked by PST while learned; drop it here once the level is gone so it does not linger
+                    if (power <= 0) instance.removeModifier(id);
+                    continue;
+                }
                 instance.removeModifier(id);
                 if (power > 0) {
                     AttributeModifier base = bonus.getModifier();
                     instance.addPermanentModifier(new AttributeModifier(id, "Skill level", base.getAmount() * power, base.getOperation()));
+                }
+            }
+        }
+    }
+
+    private static void applyMilestoneAttributes(ServerPlayer player, Map<ResourceLocation, Integer> ranks) {
+        java.util.Set<ResourceLocation> learned = new java.util.HashSet<>();
+        if (PlayerSkillsProvider.hasSkills(player)) {
+            for (PassiveSkill s : PlayerSkillsProvider.get(player).getPlayerSkills()) if (s != null) learned.add(s.getId());
+        }
+        for (PassiveSkill skill : SkillsReloader.getSkills().values()) {
+            if (!isRepeatable(skill)) continue;
+            List<NodeRule.Milestone> milestones = NodeRules.of(skill).milestones;
+            int level = learned.contains(skill.getId()) ? 1 + ranks.getOrDefault(skill.getId(), 0) : 0;
+            for (int m = 0; m < milestones.size(); m++) {
+                List<SkillBonus<?>> bonuses = milestones.get(m).bonuses();
+                for (int i = 0; i < bonuses.size(); i++) {
+                    if (!(bonuses.get(i) instanceof AttributeBonus bonus) || bonus.getAttribute() == null) continue;
+                    AttributeInstance instance = player.getAttribute(bonus.getAttribute());
+                    if (instance == null) continue;
+                    UUID id = UUID.nameUUIDFromBytes(("skillascension:milestone/" + skill.getId() + "/" + m + "/" + i).getBytes(StandardCharsets.UTF_8));
+                    if (bonus.isDynamic()) {
+                        // ticked by PST through MilestoneBonuses; only clean up when the milestone is not reached
+                        if (level < milestones.get(m).level) instance.removeModifier(id);
+                        continue;
+                    }
+                    instance.removeModifier(id);
+                    if (level >= milestones.get(m).level) {
+                        AttributeModifier base = bonus.getModifier();
+                        instance.addPermanentModifier(new AttributeModifier(id, "Skill milestone", base.getAmount(), base.getOperation()));
+                    }
                 }
             }
         }

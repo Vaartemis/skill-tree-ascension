@@ -29,6 +29,7 @@ public abstract class PstRepeatableBonusesMixin {
    )
    private static void skillascension$addRanks(Player player, Class<?> type, CallbackInfoReturnable<List> cir) {
       Map<ResourceLocation, Integer> ranks = RepeatableSkills.ranks(player);
+      dev.skillascension.pst.MilestoneBonuses.add(player, ranks, type, (List)cir.getReturnValue());
       if (!ranks.isEmpty()) {
          List list = (List)cir.getReturnValue();
          ranks.forEach((id, rank) -> {
@@ -36,8 +37,18 @@ public abstract class PstRepeatableBonusesMixin {
             if (skill != null) {
                double power = RepeatableSkills.power(skill, rank);
 
-               for (SkillBonus<?> bonus : skill.getBonuses()) {
-                  if (!(bonus instanceof AttributeBonus) && type.isInstance(bonus)) {
+               List<SkillBonus<?>> bonuses = skill.getBonuses();
+               for (int i = 0; i < bonuses.size(); i++) {
+                  SkillBonus<?> bonus = bonuses.get(i);
+                  if (!type.isInstance(bonus)) continue;
+                  if (bonus instanceof AttributeBonus attribute) {
+                     // Static attributes are permanent modifiers (RepeatableSkills.applyAttributes); conditional ones
+                     // are ticked by PST, so they get a cached copy with a stable id that scales with the level.
+                     if (attribute.isDynamic() && power > 0) {
+                        AttributeBonus stable = dev.skillascension.pst.MilestoneBonuses.stable(attribute, "skillascension:rank/" + id + "/" + i, power);
+                        if (stable != null) list.add(stable);
+                     }
+                  } else {
                      list.add(bonus.copy().multiply((double)power));
                   }
                }

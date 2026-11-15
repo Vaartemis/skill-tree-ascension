@@ -49,8 +49,8 @@ public final class PointSources {
         for (PointType type : PointTypes.all()) {
             for (PointType.Source source : type.sources) {
                 int target = switch (source.type) {
-                    case "skill_points_earned" -> earned / source.every * source.amount;
-                    case "xp_level" -> peak / source.every * source.amount;
+                    case "skill_points_earned" -> Math.max(0, earned - source.after) / source.every * source.amount;
+                    case "xp_level" -> Math.max(0, peak - source.after) / source.every * source.amount;
                     default -> -1;
                 };
                 if (target < 0) continue;

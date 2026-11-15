@@ -102,6 +102,8 @@ public final class PointType {
         public final int every;
         public final int amount;
         public final int max;
+        /** Only what is earned past this many counts (e.g. Mastery points after the first 100 skill points). */
+        public final int after;
         public final ResourceLocation advancement;
 
         Source(int index, JsonObject json) {
@@ -110,6 +112,7 @@ public final class PointType {
             this.every = Math.max(1, GsonHelper.getAsInt(json, "every", 1));
             this.amount = GsonHelper.getAsInt(json, "amount", 1);
             this.max = Math.max(0, GsonHelper.getAsInt(json, "max", 0));
+            this.after = Math.max(0, GsonHelper.getAsInt(json, "after", 0));
             this.advancement = json.has("advancement") ? new ResourceLocation(GsonHelper.getAsString(json, "advancement")) : null;
         }
     }

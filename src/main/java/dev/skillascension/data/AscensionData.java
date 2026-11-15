@@ -43,6 +43,8 @@ public final class AscensionData {
         if (event.getPlayer() != null) AscensionNet.sendData(event.getPlayer());
         else event.getPlayerList().getPlayers().forEach(AscensionNet::sendData);
         if (event.getPlayer() == null) dev.skillascension.points.TreeAccessEvents.resendAll(event.getPlayerList().getPlayers());
+        if (event.getPlayer() == null) dev.skillascension.gates.GateEvents.resendAll(event.getPlayerList().getPlayers());
+        else dev.skillascension.gates.GateEvents.update(event.getPlayer(), true);
     }
 
     public static synchronized void write(FriendlyByteBuf buf) {

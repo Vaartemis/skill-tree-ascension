@@ -43,19 +43,29 @@ public final class PstServerSkills {
             if (rule.repeatable && RepeatableSkills.hasLearned(capability, skill)) {
                 RepeatableSkills.rankUp(player, capability, skill);
             } else {
-                String blockedTag = limitReached(player, capability, skill);
+                net.minecraft.network.chat.MutableComponent gate = dev.skillascension.gates.SkillGates.blocked(player, capability, skill);
+                String blockedTag = gate != null ? null : limitReached(player, capability, skill);
+                if (gate != null) {
+                    player.displayClientMessage(gate.withStyle(net.minecraft.ChatFormatting.RED), true);
+                } else
                 if (blockedTag != null) {
                     SkillAscension.LOG.info("{} tried to learn {} past the \"{}\" limit of its skill tree; refused.",
                             player.getGameProfile().getName(), skillId, blockedTag);
                 } else if (rule.special()) {
                     if (PointWallet.available(player, capability, skill) >= rule.cost && capability.grantSkill(skill)) {
                         PointWallet.pay(player, capability, skill, rule.cost);
+                        dev.skillascension.gates.SkillGates.pay(player, skill);
                         skill.learn(player, true);
                     }
                 } else if (capability.learnSkill(skill)) {
+                    dev.skillascension.gates.SkillGates.pay(player, skill);
                     skill.learn(player, true);
                 }
             }
+        }
+        if (skill != null) {
+            dev.skillascension.gates.GateEvents.update(player, false);
+            if (RepeatableSkills.isRepeatable(skill)) RepeatableSkills.applyAttributes(player);
         }
         sync(player);
         PointSources.update(player);

@@ -21,6 +21,8 @@
   ],
   "client": [
     "PstBuffSummaryMixin",
+    "PstGateMixin",
+    "PstGateTooltipMixin",
     "PstHideKeystoneLimitMixin",
     "PstIconScaleMixin",
     "PstPathTooltipMixin",

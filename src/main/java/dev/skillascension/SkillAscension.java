@@ -49,6 +49,7 @@ public final class SkillAscension {
         forge.register(PointSources.class);
         forge.register(PointsCommand.class);
         forge.register(dev.skillascension.points.TreeAccessEvents.class);
+        forge.register(dev.skillascension.gates.GateEvents.class);
         forge.register(ClassEvents.class);
         forge.register(CombatEvents.class);
         forge.register(DeathKnowledgeEvents.class);

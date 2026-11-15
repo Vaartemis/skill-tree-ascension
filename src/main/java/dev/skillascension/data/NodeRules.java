@@ -24,6 +24,8 @@ public final class NodeRules {
     private static final Map<PassiveSkill, NodeRule.Resolved> CACHE = new WeakHashMap<>();
     private static Map<ResourceLocation, PassiveSkillTree> treesSeen;
     private static Map<ResourceLocation, ResourceLocation> treeOfSkill = Map.of();
+    private static Map<String, List<ResourceLocation>> groups;
+    private static Map<ResourceLocation, PassiveSkill> groupsSeen;
 
     private NodeRules() {
     }
@@ -49,6 +51,7 @@ public final class NodeRules {
     public static synchronized void invalidate() {
         CACHE.clear();
         treesSeen = null;
+        groups = null;
     }
 
     public static NodeRule.Resolved of(PassiveSkill skill) {
@@ -94,6 +97,8 @@ public final class NodeRules {
         int freeEvery = 0;
         double bonusPerLevel = 1.0;
         List<NodeRule.Milestone> milestones = List.of();
+        List<Requirement> requires = List.of();
+        String exclusive = null;
 
         // 2. shortcuts written as skill tags
         for (String tag : tags) {
@@ -124,6 +129,8 @@ public final class NodeRules {
                 if (rule.freeLevelEvery != null) freeEvery = rule.freeLevelEvery;
                 if (rule.bonusPerLevel != null) bonusPerLevel = rule.bonusPerLevel;
                 if (rule.milestones != null) milestones = rule.milestones;
+                if (rule.requires != null) requires = rule.requires;
+                if (rule.exclusive != null) exclusive = rule.exclusive.isEmpty() ? null : rule.exclusive;
             }
         }
 
@@ -134,7 +141,27 @@ public final class NodeRules {
         int finalCost = Math.max(1, cost != null ? cost : PointTypes.get(points).cost);
         int finalLevelCost = Math.max(1, levelCost != null ? levelCost : finalCost);
         return new NodeRule.Resolved(points, finalCost, repeatable, Math.max(0, maxLevel), finalLevelCost, Math.max(0, freeEvery),
-                bonusPerLevel, milestones);
+                bonusPerLevel, milestones, requires, exclusive);
+    }
+
+    /** Skills of the same exclusive group, except the given one. */
+    public static synchronized List<ResourceLocation> rivals(PassiveSkill skill) {
+        NodeRule.Resolved rule = of(skill);
+        if (rule.exclusive == null) return List.of();
+        Map<ResourceLocation, PassiveSkill> all = daripher.skilltree.data.reloader.SkillsReloader.getSkills();
+        if (groups == null || groupsSeen != all) {
+            Map<String, List<ResourceLocation>> map = new HashMap<>();
+            for (PassiveSkill other : all.values()) {
+                if (other == null) continue;
+                String g = of(other).exclusive;
+                if (g != null) map.computeIfAbsent(g, k -> new ArrayList<>()).add(other.getId());
+            }
+            groups = map;
+            groupsSeen = all;
+        }
+        List<ResourceLocation> out = new ArrayList<>(groups.getOrDefault(rule.exclusive, List.of()));
+        out.remove(skill.getId());
+        return out;
     }
 
     private static int parseInt(String s, int fallback) {

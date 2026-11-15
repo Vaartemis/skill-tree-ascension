@@ -28,6 +28,8 @@ public final class NodeRule {
     final Integer freeLevelEvery;
     final Double bonusPerLevel;
     final List<Milestone> milestones;
+    final List<Requirement> requires;
+    final String exclusive;
 
     NodeRule(JsonObject json) {
         this.skills = PointType.ids(json, "skills");
@@ -46,6 +48,8 @@ public final class NodeRule {
             for (JsonElement e : GsonHelper.getAsJsonArray(json, "milestones")) list.add(new Milestone(e.getAsJsonObject()));
         }
         this.milestones = list;
+        this.requires = Requirement.list(json);
+        this.exclusive = GsonHelper.getAsString(json, "exclusive", null);
     }
 
     /** Something that happens once when a repeatable skill reaches a level. */
@@ -53,8 +57,11 @@ public final class NodeRule {
         public final int level;
         public final List<String> commands;
         public final Component message;
+        private final JsonArray bonusJson;
+        private volatile List<daripher.skilltree.skill.bonus.SkillBonus<?>> bonuses;
 
         Milestone(JsonObject json) {
+            this.bonusJson = json.has("bonuses") ? GsonHelper.getAsJsonArray(json, "bonuses") : new JsonArray();
             this.level = GsonHelper.getAsInt(json, "level");
             List<String> cmds = new ArrayList<>();
             if (json.has("commands")) {
@@ -66,11 +73,35 @@ public final class NodeRule {
             JsonElement m = json.get("message");
             this.message = m == null ? null : m.isJsonPrimitive() ? Component.literal(m.getAsString()) : Component.Serializer.fromJson(m);
         }
+
+        /** PST bonuses this milestone adds once (not multiplied by level) while the skill is at least at {@link #level}. */
+        public List<daripher.skilltree.skill.bonus.SkillBonus<?>> bonuses() {
+            List<daripher.skilltree.skill.bonus.SkillBonus<?>> list = bonuses;
+            if (list != null) return list;
+            List<daripher.skilltree.skill.bonus.SkillBonus<?>> out = new ArrayList<>();
+            for (JsonElement e : bonusJson) {
+                try {
+                    JsonObject o = e.getAsJsonObject();
+                    ResourceLocation type = new ResourceLocation(GsonHelper.getAsString(o, "type"));
+                    daripher.skilltree.skill.bonus.SkillBonus.Serializer serializer =
+                            daripher.skilltree.init.PSTRegistries.SKILL_BONUSES.get().getValue(type);
+                    if (serializer == null) {
+                        dev.skillascension.SkillAscension.LOG.error("Unknown bonus type {} in a milestone", type);
+                        continue;
+                    }
+                    out.add(serializer.deserialize(o));
+                } catch (Exception ex) {
+                    dev.skillascension.SkillAscension.LOG.error("Could not read a milestone bonus: {}", ex.toString());
+                }
+            }
+            bonuses = List.copyOf(out);
+            return bonuses;
+        }
     }
 
     /** The final rule for one skill after merging everything that matches it. */
     public static final class Resolved {
-        public static final Resolved DEFAULT = new Resolved(PointTypes.NATIVE, 1, false, 0, 1, 10, 1.0, List.of());
+        public static final Resolved DEFAULT = new Resolved(PointTypes.NATIVE, 1, false, 0, 1, 10, 1.0, List.of(), List.of(), null);
 
         public final ResourceLocation points;
         public final int cost;
@@ -82,9 +113,13 @@ public final class NodeRule {
         public final int freeLevelEvery;
         public final double bonusPerLevel;
         public final List<Milestone> milestones;
+        /** Must all pass before the skill is first learned (levels of a repeatable skill never need them). */
+        public final List<Requirement> requires;
+        /** Skills sharing this name exclude each other: learning one closes the others until the tree is reset. */
+        public final String exclusive;
 
         public Resolved(ResourceLocation points, int cost, boolean repeatable, int maxLevel, int levelCost, int freeLevelEvery,
-                        double bonusPerLevel, List<Milestone> milestones) {
+                        double bonusPerLevel, List<Milestone> milestones, List<Requirement> requires, String exclusive) {
             this.points = points;
             this.cost = cost;
             this.repeatable = repeatable;
@@ -93,6 +128,8 @@ public final class NodeRule {
             this.freeLevelEvery = freeLevelEvery;
             this.bonusPerLevel = bonusPerLevel;
             this.milestones = milestones;
+            this.requires = requires;
+            this.exclusive = exclusive;
         }
 
         public boolean isNative() {
@@ -102,6 +139,10 @@ public final class NodeRule {
         /** True when this skill does not behave like a plain PST skill. */
         public boolean special() {
             return !isNative() || cost != 1;
+        }
+
+        public boolean gated() {
+            return !requires.isEmpty() || exclusive != null;
         }
     }
 }

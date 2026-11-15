@@ -33,6 +33,7 @@ public final class AscensionNet {
         CHANNEL.registerMessage(2, CooldownMessage.class, CooldownMessage::encode, CooldownMessage::decode, CooldownMessage::handle);
         CHANNEL.registerMessage(3, DataMessage.class, DataMessage::encode, DataMessage::decode, DataMessage::handle);
         CHANNEL.registerMessage(4, LockedMessage.class, LockedMessage::encode, LockedMessage::decode, LockedMessage::handle);
+        CHANNEL.registerMessage(5, GatesMessage.class, GatesMessage::encode, GatesMessage::decode, GatesMessage::handle);
     }
 
     private static <T> void send(ServerPlayer player, T message) {
@@ -70,6 +71,32 @@ public final class AscensionNet {
 
         static void handle(LockedMessage m, Supplier<NetworkEvent.Context> ctx) {
             onClient(ctx, () -> dev.skillascension.common.LockedTrees.set(m.trees));
+        }
+    }
+
+    public static void sendGates(ServerPlayer player, Map<ResourceLocation, Integer> status) {
+        send(player, new GatesMessage(status));
+    }
+
+    /** Requirement progress of gated skills (bit i = requirement i met). */
+    public record GatesMessage(Map<ResourceLocation, Integer> status) {
+        static void encode(GatesMessage m, FriendlyByteBuf buf) {
+            buf.writeVarInt(m.status.size());
+            m.status.forEach((id, bits) -> {
+                buf.writeResourceLocation(id);
+                buf.writeInt(bits);
+            });
+        }
+
+        static GatesMessage decode(FriendlyByteBuf buf) {
+            int n = buf.readVarInt();
+            Map<ResourceLocation, Integer> map = new HashMap<>();
+            for (int i = 0; i < n; i++) map.put(buf.readResourceLocation(), buf.readInt());
+            return new GatesMessage(map);
+        }
+
+        static void handle(GatesMessage m, Supplier<NetworkEvent.Context> ctx) {
+            onClient(ctx, () -> dev.skillascension.client.ClientGates.set(m.status));
         }
     }
 
